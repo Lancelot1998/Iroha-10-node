@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  iroha-node9:
+    image: hyperledger/iroha:1.0.0_rc5
+    container_name: iroha_node9
+    ports:
+      - "50052:50051"
+      - "20001:20000"
+      - "10002:10001"
+    environment:
+      - IROHA_POSTGRES_HOST=iroha_pg9
+      - IROHA_POSTGRES_PORT=5432
+      - IROHA_POSTGRES_USER=iroha
+      - IROHA_POSTGRES_PASSWORD=helloworld
+      - KEY=node9
+      - CCACHE_DIR=/tmp/ccache
+    depends_on:
+      - iroha_pg9
+    entrypoint: ["./wait-for-it.sh", "iroha_pg9:5432", "--", "irohad", "--genesis_block", "/opt/iroha/genesis.block", "--config", "/opt/iroha/node9/config.sample", "--keypair_name", "node9"]
+    tty: true
+    volumes:
+      - ./:/opt/iroha
+      - ccache-data:/tmp/ccache
+    working_dir: /opt/iroha
+    cap_add:
+      - SYS_PTRACE
+
+  iroha_pg9:
+    image: postgres:9.5
+    container_name: iroha_pg9
+    environment:
+      - POSTGRES_USER=iroha
+      - POSTGRES_PASSWORD=helloworld
+
+volumes:
+  ccache-data:

@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  iroha-node5:
+    image: hyperledger/iroha:1.0.0_rc5
+    container_name: iroha_node5
+    ports:
+      - "50052:50051"
+      - "20001:20000"
+      - "10002:10001"
+    environment:
+      - IROHA_POSTGRES_HOST=iroha_pg5
+      - IROHA_POSTGRES_PORT=5432
+      - IROHA_POSTGRES_USER=iroha
+      - IROHA_POSTGRES_PASSWORD=helloworld
+      - KEY=node5
+      - CCACHE_DIR=/tmp/ccache
+    depends_on:
+      - iroha_pg5
+    entrypoint: ["./wait-for-it.sh", "iroha_pg5:5432", "--", "irohad", "--genesis_block", "/opt/iroha/genesis.block", "--config", "/opt/iroha/node5/config.sample", "--keypair_name", "node5"]
+    tty: true
+    volumes:
+      - ./:/opt/iroha
+      - ccache-data:/tmp/ccache
+    working_dir: /opt/iroha
+    cap_add:
+      - SYS_PTRACE
+
+  iroha_pg5:
+    image: postgres:9.5
+    container_name: iroha_pg5
+    environment:
+      - POSTGRES_USER=iroha
+      - POSTGRES_PASSWORD=helloworld
+
+volumes:
+  ccache-data:
